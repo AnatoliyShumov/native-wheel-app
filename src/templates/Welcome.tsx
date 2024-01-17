@@ -19,7 +19,13 @@ const fontSize = 26;
 const oneTurn = 360;
 const knobFill = color({ hue: 'purple' });
 
-const makeWheel = (numberOfSegments) => {
+interface WheelPath {
+    path: string;
+    color: string;
+    value: number;
+    centroid: [number, number];
+}
+const makeWheel = (numberOfSegments: number): WheelPath[] => {
     const data = Array.from({ length: numberOfSegments }).fill(1);
     const arcs = d3Shape.pie()(data);
     const colors = color({
@@ -46,7 +52,7 @@ const makeWheel = (numberOfSegments) => {
 const App = () => {
     const [enabled, setEnabled] = useState(true);
     const [finished, setFinished] = useState(false);
-    const [winner, setWinner] = useState(null);
+    const [winner, setWinner] = useState<WheelPath | null>(null);
     const [segments, setSegments] = useState(12);
     const [angleBySegment, setAngleBySegment] = useState(oneTurn / segments);
     const [angleOffset, setAngleOffset] = useState((oneTurn / segments) / 2);
@@ -55,7 +61,7 @@ const App = () => {
     const _angle = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        const angleListener = _angle.addListener(event => {
+        const angleListener = _angle.addListener(() => {
             if (enabled) {
                 setEnabled(false);
                 setFinished(false);
@@ -72,7 +78,7 @@ const App = () => {
         const newAngleOffset = newAngleBySegment / 2;
         setAngleBySegment(newAngleBySegment);
         setAngleOffset(newAngleOffset);
-        
+
         wheelPathsRef.current = makeWheel(segments);
     }, [segments]);
 
