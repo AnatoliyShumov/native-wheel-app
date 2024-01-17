@@ -250,7 +250,7 @@ const App = () => {
                     value={inputValue}
                     keyboardType="numeric"
                     placeholder="Enter number of segments"
-                    maxLength={2} // Максимальна довжина 2 символи (для чисел до 20)
+                    maxLength={2}
                 />
                 {_renderSvgWheel()}
                 {finished && enabled && renderWinner()}
@@ -281,6 +281,6 @@ const styles = StyleSheet.create({
         padding: 10,
         color: 'black',
         borderColor: 'gray',
-        width: 100, // Задайте ширину інпуту
+        width: 100,
     },
 });
