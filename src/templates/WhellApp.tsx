@@ -3,15 +3,18 @@ import {
     StyleSheet,
     View,
     TextInput,
+    TouchableWithoutFeedback,
+    Keyboard,
     Text as RNText,
     Dimensions,
     Animated
 } from 'react-native';
 import color from 'randomcolor';
-import { snap } from '@popmotion/popcorn';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import Svg, { Path, G, Text, TSpan } from 'react-native-svg';
-const { width } = Dimensions.get('screen');
+import {snap} from '@popmotion/popcorn';
+import {PanGestureHandler, State} from 'react-native-gesture-handler';
+import Svg, {Path, G, Text, TSpan} from 'react-native-svg';
+
+const {width} = Dimensions.get('screen');
 
 import {makeWheel} from "../utils/utils";
 
@@ -20,7 +23,7 @@ import {WheelPath} from "../shared/intarface/wheelIntarface"
 const wheelSize = width * 0.95;
 const fontSize = 26;
 const oneTurn = 360;
-const knobFill = color({ hue: 'purple' });
+const knobFill = color({hue: 'purple'});
 
 
 const App = () => {
@@ -63,8 +66,7 @@ const App = () => {
         const newSegments = parseInt(text, 10);
         if (!isNaN(newSegments) && newSegments > 0 && newSegments <= 20) {
             setSegments(newSegments); // Оновлюємо кількість сегментів тільки якщо ввід валідний
-        }
-        else {
+        } else {
             setInputValue("1");
             setSegments(1);
         }
@@ -78,9 +80,9 @@ const App = () => {
         return wheelPathsRef.current[index];
     };
 
-    const onPan = ({ nativeEvent }) => {
+    const onPan = ({nativeEvent}) => {
         if (nativeEvent.state === State.END) {
-            const { velocityY } = nativeEvent;
+            const {velocityY} = nativeEvent;
 
             Animated.decay(_angle, {
                 velocity: velocityY / 1000,
@@ -135,7 +137,7 @@ const App = () => {
                     width={knobSize}
                     height={(knobSize * 100) / 57}
                     viewBox={`0 0 57 100`}
-                    style={{ transform: [{ translateY: 8 }] }}
+                    style={{transform: [{translateY: 8}]}}
                 >
                     <Path
                         d="M28.034,0C12.552,0,0,12.552,0,28.034S28.034,100,28.034,100s28.034-56.483,28.034-71.966S43.517,0,28.034,0z   M28.034,40.477c-6.871,0-12.442-5.572-12.442-12.442c0-6.872,5.571-12.442,12.442-12.442c6.872,0,12.442,5.57,12.442,12.442  C40.477,34.905,34.906,40.477,28.034,40.477z"
@@ -174,7 +176,7 @@ const App = () => {
                         width={wheelSize}
                         height={wheelSize}
                         viewBox={`0 0 ${width} ${width}`}
-                        style={{ transform: [{ rotate: `-${angleOffset}deg` }] }}
+                        style={{transform: [{rotate: `-${angleOffset}deg`}]}}
                     >
                         <G y={width / 2} x={width / 2}>
                             {wheelPathsRef.current.map((arc, i) => {
@@ -183,7 +185,7 @@ const App = () => {
 
                                 return (
                                     <G key={`arc-${i}`}>
-                                        <Path d={arc.path} fill={arc.color} />
+                                        <Path d={arc.path} fill={arc.color}/>
                                         <G
                                             rotation={(i * oneTurn) / segments + angleOffset}
                                             origin={`${x}, ${y}`}
@@ -195,7 +197,7 @@ const App = () => {
                                                 textAnchor="middle"
                                                 fontSize={fontSize}
                                             >
-                                                {Array.from({ length: number.length }).map((_, j) => {
+                                                {Array.from({length: number.length}).map((_, j) => {
                                                     return (
                                                         <TSpan
                                                             x={x}
@@ -222,14 +224,16 @@ const App = () => {
         <PanGestureHandler onHandlerStateChange={onPan} enabled={enabled}>
             <View style={styles.container}>
                 <RNText>Max segments is 20</RNText>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={handleSegmentsChange}
-                    value={inputValue}
-                    keyboardType="numeric"
-                    placeholder="Enter number of segments"
-                    maxLength={2}
-                />
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={handleSegmentsChange}
+                        value={inputValue}
+                        keyboardType="numeric"
+                        placeholder="Enter number of segments"
+                        maxLength={2}
+                    />
+                </TouchableWithoutFeedback>
                 {_renderSvgWheel()}
                 {finished && enabled && renderWinner()}
             </View>
