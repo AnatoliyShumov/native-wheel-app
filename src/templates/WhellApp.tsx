@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import color from 'randomcolor';
 import {snap} from '@popmotion/popcorn';
-import {PanGestureHandler, State} from 'react-native-gesture-handler';
+import {PanGestureHandler, State, GestureHandlerRootView} from 'react-native-gesture-handler';
 import Svg, {Path, G, Text, TSpan} from 'react-native-svg';
 
 const {width} = Dimensions.get('screen');
@@ -103,6 +103,10 @@ const App = () => {
                 });
             });
         }
+    };
+
+    const onContainerPress = () => {
+        Keyboard.dismiss();
     };
 
     const renderKnob = () => {
@@ -221,9 +225,9 @@ const App = () => {
     };
 
     return (
-        <PanGestureHandler onHandlerStateChange={onPan} enabled={enabled}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.container}>
+        <GestureHandlerRootView style={{flex: 1}}>
+            <PanGestureHandler onHandlerStateChange={onPan} enabled={enabled}>
+                <View style={styles.container} onStartShouldSetResponder={onContainerPress}>
                     <RNText>Max segments is 20</RNText>
                     <TextInput
                         style={styles.input}
@@ -236,8 +240,8 @@ const App = () => {
                     {_renderSvgWheel()}
                     {finished && enabled && renderWinner()}
                 </View>
-            </TouchableWithoutFeedback>
-        </PanGestureHandler>
+            </PanGestureHandler>
+        </GestureHandlerRootView>
     );
 };
 
