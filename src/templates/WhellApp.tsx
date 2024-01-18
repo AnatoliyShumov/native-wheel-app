@@ -64,6 +64,10 @@ const App = () => {
         if (!isNaN(newSegments) && newSegments > 0 && newSegments <= 20) {
             setSegments(newSegments); // Оновлюємо кількість сегментів тільки якщо ввід валідний
         }
+        else {
+            setInputValue("1");
+            setSegments(1);
+        }
     };
     const getWinnerIndex = () => {
         const angleBySegment = oneTurn / segments;
