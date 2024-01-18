@@ -21,13 +21,14 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
-
+dist
 # Pods
 ios/Pods
 
 # Android/IntelliJ
 #
 build/
+dist
 android/app/release/
 .idea
 .gradle

@@ -1,28 +1,28 @@
 {
   "updates": [
     {
-      "id": "e588d5b1-bd22-4dcc-9108-eb68b8672ecd",
-      "createdAt": "2024-01-18T00:54:28.307Z",
-      "group": "4b227fd5-ac5c-44df-a433-31ffff15759b",
+      "id": "487b85be-3fe7-4627-981a-9e0c209b54bb",
+      "createdAt": "2024-01-18T01:05:14.600Z",
+      "group": "3eaeee84-9085-4371-809b-41ed370bd44b",
       "branch": "main",
-      "message": "update expo",
+      "message": "fix: keyboard hide",
       "runtimeVersion": "1.0.0",
       "platform": "android",
-      "manifestPermalink": "https://u.expo.dev/update/e588d5b1-bd22-4dcc-9108-eb68b8672ecd",
+      "manifestPermalink": "https://u.expo.dev/update/487b85be-3fe7-4627-981a-9e0c209b54bb",
       "isRollBackToEmbedded": false,
-      "gitCommitHash": "3a6483277a3b9277b769512718d33590ecd59937"
+      "gitCommitHash": "2af408a6199ae7651ec64a0fdff500526ba6df0e"
     },
     {
-      "id": "96bac2fc-6fe3-417f-ac9c-d61ddf42f7aa",
-      "createdAt": "2024-01-18T00:54:28.307Z",
-      "group": "4b227fd5-ac5c-44df-a433-31ffff15759b",
+      "id": "6e54e159-f805-4b7c-8878-b1bf6f47f9f9",
+      "createdAt": "2024-01-18T01:05:14.600Z",
+      "group": "3eaeee84-9085-4371-809b-41ed370bd44b",
       "branch": "main",
-      "message": "update expo",
+      "message": "fix: keyboard hide",
       "runtimeVersion": "1.0.0",
       "platform": "ios",
-      "manifestPermalink": "https://u.expo.dev/update/96bac2fc-6fe3-417f-ac9c-d61ddf42f7aa",
+      "manifestPermalink": "https://u.expo.dev/update/6e54e159-f805-4b7c-8878-b1bf6f47f9f9",
       "isRollBackToEmbedded": false,
-      "gitCommitHash": "3a6483277a3b9277b769512718d33590ecd59937"
+      "gitCommitHash": "2af408a6199ae7651ec64a0fdff500526ba6df0e"
     }
   ]
 }

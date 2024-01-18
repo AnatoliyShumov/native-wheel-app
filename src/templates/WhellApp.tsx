@@ -61,13 +61,13 @@ const App = () => {
 
 
     const handleSegmentsChange = (text) => {
-        setInputValue(text); // Оновлюємо тільки текстовий ввід
+        setInputValue(text);
 
         const newSegments = parseInt(text, 10);
         if (!isNaN(newSegments) && newSegments > 0 && newSegments <= 20) {
-            setSegments(newSegments); // Оновлюємо кількість сегментів тільки якщо ввід валідний
+            setSegments(newSegments);
         } else {
-            setInputValue("1");
+            setInputValue("");
             setSegments(1);
         }
     };
@@ -222,9 +222,9 @@ const App = () => {
 
     return (
         <PanGestureHandler onHandlerStateChange={onPan} enabled={enabled}>
-            <View style={styles.container}>
-                <RNText>Max segments is 20</RNText>
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.container}>
+                    <RNText>Max segments is 20</RNText>
                     <TextInput
                         style={styles.input}
                         onChangeText={handleSegmentsChange}
@@ -233,10 +233,10 @@ const App = () => {
                         placeholder="Enter number of segments"
                         maxLength={2}
                     />
-                </TouchableWithoutFeedback>
-                {_renderSvgWheel()}
-                {finished && enabled && renderWinner()}
-            </View>
+                    {_renderSvgWheel()}
+                    {finished && enabled && renderWinner()}
+                </View>
+            </TouchableWithoutFeedback>
         </PanGestureHandler>
     );
 };
