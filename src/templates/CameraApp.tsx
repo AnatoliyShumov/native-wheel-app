@@ -103,7 +103,6 @@ const App = () => {
                                 maximumValue={10}
                                 value={image.blur}
                                 onValueChange={(value) => {
-                                    console.log("value", value)
                                     const updatedImages = images.map((img, imgIndex) => {
                                         if (index === imgIndex) {
                                             return { ...img, blur: value };
@@ -151,6 +150,7 @@ const styles = StyleSheet.create({
     },
     cameraContainer: {
         marginVertical: 20,
+        paddingBottom: 40,
         alignSelf: 'center',
         width: 300,
         height: 400,
