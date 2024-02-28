@@ -1,200 +1,140 @@
-import React, { useState, useRef } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert, ImageBackground } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import { Camera } from 'expo-camera';
 
-export default function App() {
-    const [startCamera, setStartCamera] = useState([false, false]); // Оновлено для підтримки двох камер
-    const [previewVisible, setPreviewVisible] = useState([false, false]);
-    const [capturedImage, setCapturedImage] = useState([null, null]);
-    const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
-    const [flashMode, setFlashMode] = useState('off');
+const CameraBlock = ({ index, onPictureTaken }) => {
+    const [hasPermission, setHasPermission] = useState(null);
+    const [cameraReady, setCameraReady] = useState(false);
+    const cameraRef = React.useRef(null);
 
-    const cameraRefs = useRef([null, null]);
+    useEffect(() => {
+        (async () => {
+            const { status } = await Camera.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
 
-
-
-    const __startCamera = async (index) => {
-        const { status } = await Camera.requestPermissionsAsync();
-        if (status === 'granted') {
-            const updatedStartCamera = [...startCamera];
-            updatedStartCamera[index] = true;
-            setStartCamera(updatedStartCamera);
-        } else {
-            Alert.alert('Access denied');
+    const takePicture = async () => {
+        if (cameraRef.current && cameraReady) {
+            const photo = await cameraRef.current.takePictureAsync();
+            onPictureTaken(photo.uri, index);
         }
     };
 
-    const __takePicture = async (index) => {
-        if (cameraRefs.current[index]) {
-            const photo = await cameraRefs.current[index].takePictureAsync();
-            const updatedPreviewVisible = [...previewVisible];
-            const updatedCapturedImage = [...capturedImage];
-            updatedPreviewVisible[index] = true;
-            updatedCapturedImage[index] = photo;
-            setPreviewVisible(updatedPreviewVisible);
-            setCapturedImage(updatedCapturedImage);
-        }
-    };
-
-    const __retakePicture = (index) => {
-        const updatedCapturedImage = [...capturedImage];
-        const updatedPreviewVisible = [...previewVisible];
-        updatedCapturedImage[index] = null;
-        updatedPreviewVisible[index] = false;
-        setCapturedImage(updatedCapturedImage);
-        setPreviewVisible(updatedPreviewVisible);
-        __startCamera(index);
-    };
-
-    const __savePhoto = () => {}
-    const __handleFlashMode = () => {
-        if (flashMode === 'on') {
-            setFlashMode('off')
-        } else if (flashMode === 'off') {
-            setFlashMode('on')
-        } else {
-            setFlashMode('auto')
-        }
+    if (hasPermission === null) {
+        return <View />;
     }
-    const __switchCamera = () => {
-        if (cameraType === 'back') {
-            setCameraType('front')
-        } else {
-            setCameraType('back')
-        }
+    if (hasPermission === false) {
+        return <Text>No access to camera</Text>;
     }
 
     return (
-        <ScrollView style={styles.container} horizontal pagingEnabled>
+        <Camera
+            style={styles.camera}
+            type={Camera.Constants.Type.back}
+            ref={cameraRef}
+            onCameraReady={() => setCameraReady(true)}
+        >
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity onPress={takePicture} style={styles.button}>
+                    <Text style={styles.text}>Take Picture</Text>
+                </TouchableOpacity>
+            </View>
+        </Camera>
+    );
+};
+
+const App = () => {
+    const [images, setImages] = useState([null, null]);
+
+    console.log("images", images)
+
+    const handlePictureTaken = (uri, index) => {
+        const newImages = [...images];
+        newImages[index] = uri;
+        setImages(newImages);
+    };
+
+    const retakePhoto = (index) => {
+        const newImages = [...images];
+        newImages[index] = null;
+        setImages(newImages);
+    };
+
+    return (
+        <ScrollView style={styles.container}>
             {[0, 1].map((index) => (
                 <View key={index} style={styles.cameraContainer}>
-                    {startCamera[index] ? (
-                        previewVisible[index] && capturedImage[index] ? (
-                            <ImageBackground source={{ uri: capturedImage[index].uri }} style={styles.preview}>
-                                {/* Кнопки перезйомки та збереження фото */}
-                            </ImageBackground>
-                        ) : (
-                            <Camera
-                                type={cameraType}
-                                flashMode={flashMode}
-                                style={styles.camera}
-                                ref={(ref) => (cameraRefs.current[index] = ref)}
-                            >
-                                {/* Кнопки управління камерою */}
-                                <TouchableOpacity onPress={() => __takePicture(index)} style={styles.captureButton} />
-                            </Camera>
-                        )
+                    {images[index] ? (
+                        <View style={styles.imagePreviewContainer}>
+                            <Image source={{ uri: images[index] }} style={styles.image} />
+                            <TouchableOpacity onPress={() => retakePhoto(index)} style={styles.retakeButton}>
+                                <Text style={styles.retakeButtonText}>Retake</Text>
+                            </TouchableOpacity>
+                        </View>
                     ) : (
-                        <TouchableOpacity onPress={() => __startCamera(index)} style={styles.startCameraButton}>
-                            <Text style={styles.buttonText}>Take picture</Text>
-                        </TouchableOpacity>
+                        <CameraBlock index={index} onPictureTaken={handlePictureTaken} />
                     )}
                 </View>
             ))}
-            <StatusBar style="auto" />
         </ScrollView>
-    )
-}
+    );
+};
 
 const styles = StyleSheet.create({
+    imagePreviewContainer: {
+        width: 300,
+        height: 400,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    retakeButton: {
+        position: 'absolute',
+        bottom: 20,
+        backgroundColor: 'red',
+        padding: 10,
+        borderRadius: 5,
+    },
+    retakeButtonText: {
+        color: 'white',
+        fontSize: 18,
+    },
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     cameraContainer: {
-        flex: 1,
-        width: '100%', // Забезпечте, щоб ширина відповідала ширині екрану
+        marginVertical: 20,
+        alignSelf: 'center',
+        width: 300,
+        height: 400,
     },
     camera: {
         flex: 1,
+        width: 300,
+        height: 400,
     },
-    preview: {
+    buttonContainer: {
         flex: 1,
+        backgroundColor: 'transparent',
+        flexDirection: 'row',
+        margin: 20,
     },
-    captureButton: {
-        // Стилі для кнопки зйомки
+    button: {
+        alignSelf: 'flex-end',
+        alignItems: 'center',
+        backgroundColor: 'blue',
+        padding: 10,
+        marginBottom: 10,
     },
-    startCameraButton: {
-        // Стилі для кнопки запуску камери
+    text: {
+        fontSize: 18,
+        color: 'white',
     },
-    buttonText: {
-        // Стилі для тексту всередині кнопок
+    image: {
+        width: 300,
+        height: 400,
     },
-})
+});
 
-const CameraPreview = ({photo, retakePicture, savePhoto}: any) => {
-    console.log('sdsfds', photo)
-    return (
-        <View
-            style={{
-                backgroundColor: 'transparent',
-                flex: 1,
-                width: '100%',
-                height: '100%'
-            }}
-        >
-            <ImageBackground
-                source={{uri: photo && photo.uri}}
-                style={{
-                    flex: 1
-                }}
-            >
-                <View
-                    style={{
-                        flex: 1,
-                        flexDirection: 'column',
-                        padding: 15,
-                        justifyContent: 'flex-end'
-                    }}
-                >
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between'
-                        }}
-                    >
-                        <TouchableOpacity
-                            onPress={retakePicture}
-                            style={{
-                                width: 130,
-                                height: 40,
-
-                                alignItems: 'center',
-                                borderRadius: 4
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    color: '#fff',
-                                    fontSize: 20
-                                }}
-                            >
-                                Re-take
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={savePhoto}
-                            style={{
-                                width: 130,
-                                height: 40,
-
-                                alignItems: 'center',
-                                borderRadius: 4
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    color: '#fff',
-                                    fontSize: 20
-                                }}
-                            >
-                                save photo
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </ImageBackground>
-        </View>
-    )
-}
+export default App;
