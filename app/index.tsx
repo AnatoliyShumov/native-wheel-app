@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import  Welcome  from '@/templates/WhellApp';
+import  CameraApp  from '@/templates/CameraApp';
 
 const Home = () => (
   <>
@@ -9,7 +10,7 @@ const Home = () => (
         title: 'My home',
       }}
     />
-    <Welcome />
+    <CameraApp />
   </>
 );
 
