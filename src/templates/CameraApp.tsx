@@ -1,37 +1,53 @@
-import {StatusBar} from 'expo-status-bar'
-import React from 'react'
-import {StyleSheet, Text, View, TouchableOpacity, Alert, ImageBackground, Image} from 'react-native'
-import {Camera} from 'expo-camera'
-let camera: Camera
-export default function App() {
-    const [startCamera, setStartCamera] = React.useState(false)
-    const [previewVisible, setPreviewVisible] = React.useState(false)
-    const [capturedImage, setCapturedImage] = React.useState<any>(null)
-    const [cameraType, setCameraType] = React.useState(Camera.Constants.Type.back)
-    const [flashMode, setFlashMode] = React.useState('off')
+import React, { useState, useRef } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert, ImageBackground } from 'react-native';
+import { Camera } from 'expo-camera';
 
-    const __startCamera = async () => {
-        const {status} = await Camera.requestPermissionsAsync()
-        console.log(status)
+export default function App() {
+    const [startCamera, setStartCamera] = useState([false, false]); // Оновлено для підтримки двох камер
+    const [previewVisible, setPreviewVisible] = useState([false, false]);
+    const [capturedImage, setCapturedImage] = useState([null, null]);
+    const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
+    const [flashMode, setFlashMode] = useState('off');
+
+    const cameraRefs = useRef([null, null]);
+
+
+
+    const __startCamera = async (index) => {
+        const { status } = await Camera.requestPermissionsAsync();
         if (status === 'granted') {
-            setStartCamera(true)
+            const updatedStartCamera = [...startCamera];
+            updatedStartCamera[index] = true;
+            setStartCamera(updatedStartCamera);
         } else {
-            Alert.alert('Access denied')
+            Alert.alert('Access denied');
         }
-    }
-    const __takePicture = async () => {
-        const photo: any = await camera.takePictureAsync()
-        console.log(photo)
-        setPreviewVisible(true)
-        //setStartCamera(false)
-        setCapturedImage(photo)
-    }
+    };
+
+    const __takePicture = async (index) => {
+        if (cameraRefs.current[index]) {
+            const photo = await cameraRefs.current[index].takePictureAsync();
+            const updatedPreviewVisible = [...previewVisible];
+            const updatedCapturedImage = [...capturedImage];
+            updatedPreviewVisible[index] = true;
+            updatedCapturedImage[index] = photo;
+            setPreviewVisible(updatedPreviewVisible);
+            setCapturedImage(updatedCapturedImage);
+        }
+    };
+
+    const __retakePicture = (index) => {
+        const updatedCapturedImage = [...capturedImage];
+        const updatedPreviewVisible = [...previewVisible];
+        updatedCapturedImage[index] = null;
+        updatedPreviewVisible[index] = false;
+        setCapturedImage(updatedCapturedImage);
+        setPreviewVisible(updatedPreviewVisible);
+        __startCamera(index);
+    };
+
     const __savePhoto = () => {}
-    const __retakePicture = () => {
-        setCapturedImage(null)
-        setPreviewVisible(false)
-        __startCamera()
-    }
     const __handleFlashMode = () => {
         if (flashMode === 'on') {
             setFlashMode('off')
@@ -50,147 +66,34 @@ export default function App() {
     }
 
     return (
-        <View style={styles.container}>
-            {startCamera ? (
-                <View
-                    style={{
-                        flex: 1,
-                        width: '100%'
-                    }}
-                >
-                    {previewVisible && capturedImage ? (
-                        <CameraPreview photo={capturedImage} savePhoto={__savePhoto} retakePicture={__retakePicture} />
-                    ) : (
-                        <Camera
-                            type={cameraType}
-                            flashMode={flashMode}
-                            style={{flex: 1}}
-                            ref={(r) => {
-                                camera = r
-                            }}
-                        >
-                            <View
-                                style={{
-                                    flex: 1,
-                                    width: '100%',
-                                    backgroundColor: 'transparent',
-                                    flexDirection: 'row'
-                                }}
+        <ScrollView style={styles.container} horizontal pagingEnabled>
+            {[0, 1].map((index) => (
+                <View key={index} style={styles.cameraContainer}>
+                    {startCamera[index] ? (
+                        previewVisible[index] && capturedImage[index] ? (
+                            <ImageBackground source={{ uri: capturedImage[index].uri }} style={styles.preview}>
+                                {/* Кнопки перезйомки та збереження фото */}
+                            </ImageBackground>
+                        ) : (
+                            <Camera
+                                type={cameraType}
+                                flashMode={flashMode}
+                                style={styles.camera}
+                                ref={(ref) => (cameraRefs.current[index] = ref)}
                             >
-                                <View
-                                    style={{
-                                        position: 'absolute',
-                                        left: '5%',
-                                        top: '10%',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between'
-                                    }}
-                                >
-                                    <TouchableOpacity
-                                        onPress={__handleFlashMode}
-                                        style={{
-                                            backgroundColor: flashMode === 'off' ? '#000' : '#fff',
-                                            borderRadius: '50%',
-                                            height: 25,
-                                            width: 25
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                fontSize: 20
-                                            }}
-                                        >
-                                            ⚡️
-                                        </Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={__switchCamera}
-                                        style={{
-                                            marginTop: 20,
-                                            borderRadius: '50%',
-                                            height: 25,
-                                            width: 25
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                fontSize: 20
-                                            }}
-                                        >
-                                            {cameraType === 'front' ? '🤳' : '📷'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: 0,
-                                        flexDirection: 'row',
-                                        flex: 1,
-                                        width: '100%',
-                                        padding: 20,
-                                        justifyContent: 'space-between'
-                                    }}
-                                >
-                                    <View
-                                        style={{
-                                            alignSelf: 'center',
-                                            flex: 1,
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        <TouchableOpacity
-                                            onPress={__takePicture}
-                                            style={{
-                                                width: 70,
-                                                height: 70,
-                                                bottom: 0,
-                                                borderRadius: 50,
-                                                backgroundColor: '#fff'
-                                            }}
-                                        />
-                                    </View>
-                                </View>
-                            </View>
-                        </Camera>
+                                {/* Кнопки управління камерою */}
+                                <TouchableOpacity onPress={() => __takePicture(index)} style={styles.captureButton} />
+                            </Camera>
+                        )
+                    ) : (
+                        <TouchableOpacity onPress={() => __startCamera(index)} style={styles.startCameraButton}>
+                            <Text style={styles.buttonText}>Take picture</Text>
+                        </TouchableOpacity>
                     )}
                 </View>
-            ) : (
-                <View
-                    style={{
-                        flex: 1,
-                        backgroundColor: '#fff',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                >
-                    <TouchableOpacity
-                        onPress={__startCamera}
-                        style={{
-                            width: 130,
-                            borderRadius: 4,
-                            backgroundColor: '#14274e',
-                            flexDirection: 'row',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            height: 40
-                        }}
-                    >
-                        <Text
-                            style={{
-                                color: '#fff',
-                                fontWeight: 'bold',
-                                textAlign: 'center'
-                            }}
-                        >
-                            Take picture
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-
+            ))}
             <StatusBar style="auto" />
-        </View>
+        </ScrollView>
     )
 }
 
@@ -198,9 +101,26 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center'
-    }
+    },
+    cameraContainer: {
+        flex: 1,
+        width: '100%', // Забезпечте, щоб ширина відповідала ширині екрану
+    },
+    camera: {
+        flex: 1,
+    },
+    preview: {
+        flex: 1,
+    },
+    captureButton: {
+        // Стилі для кнопки зйомки
+    },
+    startCameraButton: {
+        // Стилі для кнопки запуску камери
+    },
+    buttonText: {
+        // Стилі для тексту всередині кнопок
+    },
 })
 
 const CameraPreview = ({photo, retakePicture, savePhoto}: any) => {

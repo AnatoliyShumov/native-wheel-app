@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "react-native-boilerplate",
-    "slug": "react-native-boilerplate",
+    "slug": "camera-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -43,11 +43,12 @@
         "origin": false
       },
       "eas": {
-        "projectId": "1131bc83-5bd1-4fca-b16d-77cbc67033f4"
+        "projectId": "b6923d55-476f-4997-bb24-a74f45d8c248"
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/1131bc83-5bd1-4fca-b16d-77cbc67033f4"
-    }
+      "url": "https://u.expo.dev/b6923d55-476f-4997-bb24-a74f45d8c248"
+    },
+    "owner": "shumovv"
   }
 }
