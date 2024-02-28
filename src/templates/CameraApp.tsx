@@ -88,7 +88,7 @@ const App = () => {
                         <View style={styles.imagePreviewContainer}>
                             <Image source={{ uri: image.uri }} style={styles.image} blurRadius={image.blur} />
                             <Slider
-                                style={{ width: 200, height: 40, marginHorizontal: 20 }}
+                                style={{ width: 200, height: 40, marginBottom: 50 }}
                                 minimumValue={0}
                                 maximumValue={20}
                                 value={image.blur}
