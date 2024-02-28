@@ -48,6 +48,7 @@ export default function App() {
             setCameraType('back')
         }
     }
+
     return (
         <View style={styles.container}>
             {startCamera ? (
