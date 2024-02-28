@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { Camera } from 'expo-camera';
+import * as FaceDetector from 'expo-face-detector';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 const CameraBlock = ({ index, onPictureTaken }) => {
     const [hasPermission, setHasPermission] = useState(null);
@@ -17,8 +19,25 @@ const CameraBlock = ({ index, onPictureTaken }) => {
     const takePicture = async () => {
         if (cameraRef.current && cameraReady) {
             const photo = await cameraRef.current.takePictureAsync();
-            onPictureTaken(photo.uri, index);
+            const faces = await detectFaces(photo.uri);
+            console.log('Detected faces:', faces); // Ви можете використовувати ці дані для подальших дій
+            const manipulatedImage = await applyImageEffects(photo.uri);
+            onPictureTaken(manipulatedImage.uri, index);
         }
+    };
+
+    const detectFaces = async (imageUri) => {
+        const options = { mode: "fast" };
+        return await FaceDetector.detectFacesAsync(imageUri, options);
+    };
+
+    const applyImageEffects = async (imageUri) => {
+        // Приклад застосування блюру до зображення
+        return await ImageManipulator.manipulateAsync(
+            imageUri,
+            [{ blur: 0.5 }], // Ви можете змінювати це значення для регулювання ефекту
+            { compress: 1, format: ImageManipulator.SaveFormat.PNG }
+        );
     };
 
     if (hasPermission === null) {
