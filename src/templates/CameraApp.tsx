@@ -65,17 +65,28 @@ const App = () => {
     };
 
     const applyImageManipulations = async (index) => {
-        if (images[index].uri) {
-            const { uri, blur } = images[index];
+        // if (images[index].uri) {
+        //     const { uri, blur } = images[index];
+        //     const manipulatedImage = await ImageManipulator.manipulateAsync(
+        //         uri,
+        //         [{ blur: blur }],
+        //         { compress: 1, format: ImageManipulator.SaveFormat.PNG }
+        //     );
+        //     const updatedImages = [...images];
+        //     updatedImages[index] = { ...updatedImages[index], uri: manipulatedImage.uri };
+        //     setImages(updatedImages);
+        // }
+
+            const { uri, blur } = images[0];
             const manipulatedImage = await ImageManipulator.manipulateAsync(
                 uri,
-                [{ blur: blur }],
+                [{ blur: 10 }],
                 { compress: 1, format: ImageManipulator.SaveFormat.PNG }
             );
             const updatedImages = [...images];
-            updatedImages[index] = { ...updatedImages[index], uri: manipulatedImage.uri };
+            updatedImages[index] = { ...updatedImages[0], uri: manipulatedImage.uri };
             setImages(updatedImages);
-        }
+
     };
 
 
@@ -85,13 +96,14 @@ const App = () => {
                 <View key={index} style={styles.cameraContainer}>
                     {image?.uri ? (
                         <View style={styles.imagePreviewContainer}>
-                            <Image source={{ uri: image.uri }} style={styles.image} />
+                            <Image source={{ uri: image.uri }} style={styles.image} blurRadius={image.blur} />
                             <Slider
-                                style={{ width: 200, height: 40, marginHorizontal: 15 }}
+                                style={{ width: 200, height: 40, marginHorizontal: 20 }}
                                 minimumValue={0}
-                                maximumValue={60}
+                                maximumValue={10}
                                 value={image.blur}
                                 onValueChange={(value) => {
+                                    console.log("value", value)
                                     const updatedImages = images.map((img, imgIndex) => {
                                         if (index === imgIndex) {
                                             return { ...img, blur: value };
@@ -102,7 +114,7 @@ const App = () => {
                                 }}
                                 onSlidingComplete={() => applyImageManipulations(index)}
                             />
-                            <TouchableOpacity onPress={() => retakePhoto(index)} style={styles.retakeButton}>
+                            <TouchableOpacity onPress={() => applyImageManipulations(index)} style={styles.retakeButton}>
                                 <Text style={styles.retakeButtonText}>Retake</Text>
                             </TouchableOpacity>
                         </View>
