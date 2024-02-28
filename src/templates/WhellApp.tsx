@@ -1,251 +1,197 @@
-import React, {useRef, useState, useEffect} from 'react';
-import {
-    StyleSheet,
-    View,
-    TextInput,
-    TouchableWithoutFeedback,
-    Keyboard,
-    Text as RNText,
-    Dimensions,
-    Animated
-} from 'react-native';
-import color from 'randomcolor';
-import {snap} from '@popmotion/popcorn';
-import {PanGestureHandler, State, GestureHandlerRootView} from 'react-native-gesture-handler';
-import Svg, {Path, G, Text, TSpan} from 'react-native-svg';
+import {StatusBar} from 'expo-status-bar'
+import React from 'react'
+import {StyleSheet, Text, View, TouchableOpacity, Alert, ImageBackground, Image} from 'react-native'
+import {Camera} from 'expo-camera'
+let camera: Camera
+export default function App() {
+    const [startCamera, setStartCamera] = React.useState(false)
+    const [previewVisible, setPreviewVisible] = React.useState(false)
+    const [capturedImage, setCapturedImage] = React.useState<any>(null)
+    const [cameraType, setCameraType] = React.useState(Camera.Constants.Type.back)
+    const [flashMode, setFlashMode] = React.useState('off')
 
-const {width} = Dimensions.get('screen');
-
-import {makeWheel} from "../utils/utils";
-
-import {WheelPath} from "../shared/intarface/wheelIntarface"
-
-const wheelSize = width * 0.95;
-const fontSize = 26;
-const oneTurn = 360;
-const knobFill = color({hue: 'purple'});
-
-
-const App = () => {
-    const [enabled, setEnabled] = useState(true);
-    const [finished, setFinished] = useState(false);
-    const [winner, setWinner] = useState<WheelPath | null>(null);
-    const [segments, setSegments] = useState(12);
-    const [angleBySegment, setAngleBySegment] = useState(oneTurn / segments);
-    const [angleOffset, setAngleOffset] = useState((oneTurn / segments) / 2);
-    const [inputValue, setInputValue] = useState('12');
-    const wheelPathsRef = useRef(makeWheel(segments));
-    const _angle = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-        const angleListener = _angle.addListener(() => {
-            if (enabled) {
-                setEnabled(false);
-                setFinished(false);
-            }
-        });
-
-        return () => {
-            _angle.removeListener(angleListener);
-        };
-    }, [enabled]);
-
-    useEffect(() => {
-        const newAngleBySegment = oneTurn / segments;
-        const newAngleOffset = newAngleBySegment / 2;
-        setAngleBySegment(newAngleBySegment);
-        setAngleOffset(newAngleOffset);
-
-        wheelPathsRef.current = makeWheel(segments);
-    }, [segments]);
-
-
-    const handleSegmentsChange = (text) => {
-        setInputValue(text);
-
-        const newSegments = parseInt(text, 10);
-        if (!isNaN(newSegments) && newSegments > 0 && newSegments <= 20) {
-            setSegments(newSegments);
+    const __startCamera = async () => {
+        const {status} = await Camera.requestPermissionsAsync()
+        console.log(status)
+        if (status === 'granted') {
+            setStartCamera(true)
         } else {
-            setInputValue("");
-            setSegments(1);
+            Alert.alert('Access denied')
         }
-    };
-    const getWinnerIndex = () => {
-        const angleBySegment = oneTurn / segments;
-        const deg = Math.abs(Math.round(_angle._value % oneTurn));
-        const index = _angle._value < 0
-            ? Math.floor(deg / angleBySegment)
-            : (segments - Math.floor(deg / angleBySegment)) % segments;
-        return wheelPathsRef.current[index];
-    };
-
-    const onPan = ({nativeEvent}) => {
-        if (nativeEvent.state === State.END) {
-            const {velocityY} = nativeEvent;
-
-            Animated.decay(_angle, {
-                velocity: velocityY / 1000,
-                deceleration: 0.999,
-                useNativeDriver: true
-            }).start(() => {
-                _angle.setValue(_angle._value % oneTurn);
-                const snapTo = snap(oneTurn / segments);
-                Animated.timing(_angle, {
-                    toValue: snapTo(_angle._value),
-                    duration: 300,
-                    useNativeDriver: true
-                }).start(() => {
-                    const winnerSegment = getWinnerIndex();
-                    setEnabled(true);
-                    setFinished(true);
-                    setWinner(winnerSegment);
-                });
-            });
+    }
+    const __takePicture = async () => {
+        const photo: any = await camera.takePictureAsync()
+        console.log(photo)
+        setPreviewVisible(true)
+        //setStartCamera(false)
+        setCapturedImage(photo)
+    }
+    const __savePhoto = () => {}
+    const __retakePicture = () => {
+        setCapturedImage(null)
+        setPreviewVisible(false)
+        __startCamera()
+    }
+    const __handleFlashMode = () => {
+        if (flashMode === 'on') {
+            setFlashMode('off')
+        } else if (flashMode === 'off') {
+            setFlashMode('on')
+        } else {
+            setFlashMode('auto')
         }
-    };
-
-    const onContainerPress = () => {
-        Keyboard.dismiss();
-    };
-
-    const renderKnob = () => {
-        const knobSize = 30;
-        // [0, numberOfSegments]
-        const YOLO = Animated.modulo(
-            Animated.divide(
-                Animated.modulo(Animated.subtract(_angle, angleOffset), oneTurn),
-                new Animated.Value(angleBySegment)
-            ),
-            1
-        );
-
-        return (
-            <Animated.View
-                style={{
-                    width: knobSize,
-                    height: knobSize * 2,
-                    justifyContent: 'flex-end',
-                    zIndex: 1,
-                    transform: [
-                        {
-                            rotate: YOLO.interpolate({
-                                inputRange: [-1, -0.5, -0.0001, 0.0001, 0.5, 1],
-                                outputRange: ['0deg', '0deg', '35deg', '-35deg', '0deg', '0deg']
-                            })
-                        }
-                    ]
-                }}
-            >
-                <Svg
-                    width={knobSize}
-                    height={(knobSize * 100) / 57}
-                    viewBox={`0 0 57 100`}
-                    style={{transform: [{translateY: 8}]}}
-                >
-                    <Path
-                        d="M28.034,0C12.552,0,0,12.552,0,28.034S28.034,100,28.034,100s28.034-56.483,28.034-71.966S43.517,0,28.034,0z   M28.034,40.477c-6.871,0-12.442-5.572-12.442-12.442c0-6.872,5.571-12.442,12.442-12.442c6.872,0,12.442,5.57,12.442,12.442  C40.477,34.905,34.906,40.477,28.034,40.477z"
-                        fill={knobFill}
-                    />
-                </Svg>
-            </Animated.View>
-        );
-    };
-
-    const renderWinner = () => {
-        return (
-            <RNText style={styles.winnerText}>Winner is: {winner?.value}</RNText>
-        );
-    };
-
-    const _renderSvgWheel = () => {
-        return (
-            <View style={styles.container}>
-                {renderKnob()}
-                <Animated.View
+    }
+    const __switchCamera = () => {
+        if (cameraType === 'back') {
+            setCameraType('front')
+        } else {
+            setCameraType('back')
+        }
+    }
+    return (
+        <View style={styles.container}>
+            {startCamera ? (
+                <View
                     style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transform: [
-                            {
-                                rotate: _angle.interpolate({
-                                    inputRange: [-oneTurn, 0, oneTurn],
-                                    outputRange: [`-${oneTurn}deg`, `0deg`, `${oneTurn}deg`]
-                                })
-                            }
-                        ]
+                        flex: 1,
+                        width: '100%'
                     }}
                 >
-                    <Svg
-                        width={wheelSize}
-                        height={wheelSize}
-                        viewBox={`0 0 ${width} ${width}`}
-                        style={{transform: [{rotate: `-${angleOffset}deg`}]}}
-                    >
-                        <G y={width / 2} x={width / 2}>
-                            {wheelPathsRef.current.map((arc, i) => {
-                                const [x, y] = arc.centroid;
-                                const number = arc.value.toString();
-
-                                return (
-                                    <G key={`arc-${i}`}>
-                                        <Path d={arc.path} fill={arc.color}/>
-                                        <G
-                                            rotation={(i * oneTurn) / segments + angleOffset}
-                                            origin={`${x}, ${y}`}
+                    {previewVisible && capturedImage ? (
+                        <CameraPreview photo={capturedImage} savePhoto={__savePhoto} retakePicture={__retakePicture} />
+                    ) : (
+                        <Camera
+                            type={cameraType}
+                            flashMode={flashMode}
+                            style={{flex: 1}}
+                            ref={(r) => {
+                                camera = r
+                            }}
+                        >
+                            <View
+                                style={{
+                                    flex: 1,
+                                    width: '100%',
+                                    backgroundColor: 'transparent',
+                                    flexDirection: 'row'
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        left: '5%',
+                                        top: '10%',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between'
+                                    }}
+                                >
+                                    <TouchableOpacity
+                                        onPress={__handleFlashMode}
+                                        style={{
+                                            backgroundColor: flashMode === 'off' ? '#000' : '#fff',
+                                            borderRadius: '50%',
+                                            height: 25,
+                                            width: 25
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: 20
+                                            }}
                                         >
-                                            <Text
-                                                x={x}
-                                                y={y - 70}
-                                                fill="white"
-                                                textAnchor="middle"
-                                                fontSize={fontSize}
-                                            >
-                                                {Array.from({length: number.length}).map((_, j) => {
-                                                    return (
-                                                        <TSpan
-                                                            x={x}
-                                                            dy={fontSize}
-                                                            key={`arc-${i}-slice-${j}`}
-                                                        >
-                                                            {number.charAt(j)}
-                                                        </TSpan>
-                                                    );
-                                                })}
-                                            </Text>
-                                        </G>
-                                    </G>
-                                );
-                            })}
-                        </G>
-                    </Svg>
-                </Animated.View>
-            </View>
-        );
-    };
-
-    return (
-        <GestureHandlerRootView style={{flex: 1}}>
-            <PanGestureHandler onHandlerStateChange={onPan} enabled={enabled}>
-                <View style={styles.container} onStartShouldSetResponder={onContainerPress}>
-                    <RNText>Max segments is 20</RNText>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={handleSegmentsChange}
-                        value={inputValue}
-                        keyboardType="numeric"
-                        placeholder="Enter number of segments"
-                        maxLength={2}
-                    />
-                    {_renderSvgWheel()}
-                    {finished && enabled && renderWinner()}
+                                            ⚡️
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={__switchCamera}
+                                        style={{
+                                            marginTop: 20,
+                                            borderRadius: '50%',
+                                            height: 25,
+                                            width: 25
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: 20
+                                            }}
+                                        >
+                                            {cameraType === 'front' ? '🤳' : '📷'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        flexDirection: 'row',
+                                        flex: 1,
+                                        width: '100%',
+                                        padding: 20,
+                                        justifyContent: 'space-between'
+                                    }}
+                                >
+                                    <View
+                                        style={{
+                                            alignSelf: 'center',
+                                            flex: 1,
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <TouchableOpacity
+                                            onPress={__takePicture}
+                                            style={{
+                                                width: 70,
+                                                height: 70,
+                                                bottom: 0,
+                                                borderRadius: 50,
+                                                backgroundColor: '#fff'
+                                            }}
+                                        />
+                                    </View>
+                                </View>
+                            </View>
+                        </Camera>
+                    )}
                 </View>
-            </PanGestureHandler>
-        </GestureHandlerRootView>
-    );
-};
+            ) : (
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor: '#fff',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
+                >
+                    <TouchableOpacity
+                        onPress={__startCamera}
+                        style={{
+                            width: 130,
+                            borderRadius: 4,
+                            backgroundColor: '#14274e',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            height: 40
+                        }}
+                    >
+                        <Text
+                            style={{
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                textAlign: 'center'
+                            }}
+                        >
+                            Take picture
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
-export default App
+            <StatusBar style="auto" />
+        </View>
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -253,20 +199,81 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center'
-    },
-    winnerText: {
-        fontSize: 32,
-        fontFamily: 'Menlo',
-        position: 'absolute',
-        bottom: 10
-    },
-    input: {
-        height: 40,
-        margin: 12,
-        borderWidth: 1,
-        padding: 10,
-        color: 'black',
-        borderColor: 'gray',
-        width: 100,
-    },
-});
+    }
+})
+
+const CameraPreview = ({photo, retakePicture, savePhoto}: any) => {
+    console.log('sdsfds', photo)
+    return (
+        <View
+            style={{
+                backgroundColor: 'transparent',
+                flex: 1,
+                width: '100%',
+                height: '100%'
+            }}
+        >
+            <ImageBackground
+                source={{uri: photo && photo.uri}}
+                style={{
+                    flex: 1
+                }}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        flexDirection: 'column',
+                        padding: 15,
+                        justifyContent: 'flex-end'
+                    }}
+                >
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between'
+                        }}
+                    >
+                        <TouchableOpacity
+                            onPress={retakePicture}
+                            style={{
+                                width: 130,
+                                height: 40,
+
+                                alignItems: 'center',
+                                borderRadius: 4
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: '#fff',
+                                    fontSize: 20
+                                }}
+                            >
+                                Re-take
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={savePhoto}
+                            style={{
+                                width: 130,
+                                height: 40,
+
+                                alignItems: 'center',
+                                borderRadius: 4
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: '#fff',
+                                    fontSize: 20
+                                }}
+                            >
+                                save photo
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </ImageBackground>
+        </View>
+    )
+}

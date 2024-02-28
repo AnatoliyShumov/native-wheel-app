@@ -6,6 +6,8 @@ PODS:
     - ExpoModulesCore
   - EXApplication (5.3.1):
     - ExpoModulesCore
+  - EXCamera (13.4.4):
+    - ExpoModulesCore
   - EXConstants (14.4.2):
     - ExpoModulesCore
   - EXFileSystem (15.4.5):
@@ -53,9 +55,9 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.72.6)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - hermes-engine (0.72.5):
-    - hermes-engine/Pre-built (= 0.72.5)
-  - hermes-engine/Pre-built (0.72.5)
+  - hermes-engine (0.72.6):
+    - hermes-engine/Pre-built (= 0.72.6)
+  - hermes-engine/Pre-built (0.72.6)
   - libevent (2.1.12)
   - RCT-Folly (2021.07.22.00):
     - boost
@@ -518,6 +520,7 @@ DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EASClient (from `../node_modules/expo-eas-client/ios`)
   - EXApplication (from `../node_modules/expo-application/ios`)
+  - EXCamera (from `../node_modules/expo-camera/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
   - EXFont (from `../node_modules/expo-font/ios`)
@@ -593,6 +596,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-eas-client/ios"
   EXApplication:
     :path: "../node_modules/expo-application/ios"
+  EXCamera:
+    :path: "../node_modules/expo-camera/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   EXFileSystem:
@@ -711,6 +716,7 @@ SPEC CHECKSUMS:
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   EASClient: 49f8ea858204eb4844d9fb386e5fb7920aee2e30
   EXApplication: 042aa2e3f05258a16962ea1a9914bf288db9c9a1
+  EXCamera: 6e6e79bf01a2b8190268d93297d8e79a843d5ede
   EXConstants: ce5bbea779da8031ac818c36bea41b10e14d04e1
   EXFileSystem: f8b838a880254de42a5a7da20ed5ce12e2697c1b
   EXFont: 738c44c390953ebcbab075a4848bfbef025fd9ee
@@ -728,7 +734,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: 966f29e4e697de53a3b366355e8f57375c856ad9
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
-  hermes-engine: f6cf92a471053245614d9d8097736f6337d5b86c
+  hermes-engine: 8057e75cfc1437b178ac86c8654b24e7fead7f60
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: 28469809442eb4eb5528462705f7d852948c8a74
