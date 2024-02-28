@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     },
     retakeButton: {
         position: 'absolute',
-        bottom: 20,
+        bottom: 40,
         backgroundColor: 'red',
         padding: 10,
         borderRadius: 5,
