@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { Camera } from 'expo-camera';
 import * as FaceDetector from 'expo-face-detector';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -19,25 +20,8 @@ const CameraBlock = ({ index, onPictureTaken }) => {
     const takePicture = async () => {
         if (cameraRef.current && cameraReady) {
             const photo = await cameraRef.current.takePictureAsync();
-            const faces = await detectFaces(photo.uri);
-            console.log('Detected faces:', faces); // Ви можете використовувати ці дані для подальших дій
-            const manipulatedImage = await applyImageEffects(photo.uri);
-            onPictureTaken(manipulatedImage.uri, index);
+            onPictureTaken(photo.uri, index);
         }
-    };
-
-    const detectFaces = async (imageUri) => {
-        const options = { mode: "fast" };
-        return await FaceDetector.detectFacesAsync(imageUri, options);
-    };
-
-    const applyImageEffects = async (imageUri) => {
-        // Приклад застосування блюру до зображення
-        return await ImageManipulator.manipulateAsync(
-            imageUri,
-            [{ blur: 0.5 }], // Ви можете змінювати це значення для регулювання ефекту
-            { compress: 1, format: ImageManipulator.SaveFormat.PNG }
-        );
     };
 
     if (hasPermission === null) {
@@ -64,13 +48,13 @@ const CameraBlock = ({ index, onPictureTaken }) => {
 };
 
 const App = () => {
-    const [images, setImages] = useState([null, null]);
+    const [images, setImages] = useState([{ uri: null, blur: 0, sharpness: 0 }, { uri: null, blur: 0, sharpness: 0 }]);
 
     console.log("images", images)
 
     const handlePictureTaken = (uri, index) => {
         const newImages = [...images];
-        newImages[index] = uri;
+        newImages[index] = { ...newImages[index], uri: uri };
         setImages(newImages);
     };
 
@@ -80,13 +64,45 @@ const App = () => {
         setImages(newImages);
     };
 
+    const applyImageManipulations = async (index) => {
+        if (images[index].uri) {
+            const { uri, blur } = images[index];
+            const manipulatedImage = await ImageManipulator.manipulateAsync(
+                uri,
+                [{ blur: blur }],
+                { compress: 1, format: ImageManipulator.SaveFormat.PNG }
+            );
+            const updatedImages = [...images];
+            updatedImages[index] = { ...updatedImages[index], uri: manipulatedImage.uri };
+            setImages(updatedImages);
+        }
+    };
+
+
     return (
         <ScrollView style={styles.container}>
-            {[0, 1].map((index) => (
+            {images.map((image, index) => (
                 <View key={index} style={styles.cameraContainer}>
-                    {images[index] ? (
+                    {image?.uri ? (
                         <View style={styles.imagePreviewContainer}>
-                            <Image source={{ uri: images[index] }} style={styles.image} />
+                            <Image source={{ uri: image.uri }} style={styles.image} />
+                            <Slider
+                                style={{ width: 200, height: 40, marginTop: 15 }}
+                                minimumValue={5}
+                                maximumValue={10}
+                                value={image.blur}
+                                onValueChange={(value) => {
+                                    const updatedImages = images.map((img, imgIndex) => {
+                                        if (index === imgIndex) {
+                                            return { ...img, blur: value };
+                                        }
+                                        return img;
+                                    });
+                                    setImages(updatedImages);
+                                }}
+                                onSlidingComplete={() => applyImageManipulations(index)}
+                            />
+                            {/* Додайте тут Slider для різкості, якщо знайдете спосіб її регулювання */}
                             <TouchableOpacity onPress={() => retakePhoto(index)} style={styles.retakeButton}>
                                 <Text style={styles.retakeButtonText}>Retake</Text>
                             </TouchableOpacity>
