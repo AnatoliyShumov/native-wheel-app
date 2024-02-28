@@ -65,27 +65,17 @@ const App = () => {
     };
 
     const applyImageManipulations = async (index) => {
-        // if (images[index].uri) {
-        //     const { uri, blur } = images[index];
-        //     const manipulatedImage = await ImageManipulator.manipulateAsync(
-        //         uri,
-        //         [{ blur: blur }],
-        //         { compress: 1, format: ImageManipulator.SaveFormat.PNG }
-        //     );
-        //     const updatedImages = [...images];
-        //     updatedImages[index] = { ...updatedImages[index], uri: manipulatedImage.uri };
-        //     setImages(updatedImages);
-        // }
-
-            const { uri, blur } = images[0];
+        if (images[index].uri) {
+            const { uri, blur } = images[index];
             const manipulatedImage = await ImageManipulator.manipulateAsync(
                 uri,
-                [{ blur: 10 }],
+                [{ blur: blur }],
                 { compress: 1, format: ImageManipulator.SaveFormat.PNG }
             );
             const updatedImages = [...images];
-            updatedImages[index] = { ...updatedImages[0], uri: manipulatedImage.uri };
+            updatedImages[index] = { ...updatedImages[index], uri: manipulatedImage.uri };
             setImages(updatedImages);
+        }
 
     };
 
@@ -100,7 +90,7 @@ const App = () => {
                             <Slider
                                 style={{ width: 200, height: 40, marginHorizontal: 20 }}
                                 minimumValue={0}
-                                maximumValue={10}
+                                maximumValue={20}
                                 value={image.blur}
                                 onValueChange={(value) => {
                                     const updatedImages = images.map((img, imgIndex) => {
@@ -113,7 +103,7 @@ const App = () => {
                                 }}
                                 onSlidingComplete={() => applyImageManipulations(index)}
                             />
-                            <TouchableOpacity onPress={() => applyImageManipulations(index)} style={styles.retakeButton}>
+                            <TouchableOpacity onPress={() => retakePhoto(index)} style={styles.retakeButton}>
                                 <Text style={styles.retakeButtonText}>Retake</Text>
                             </TouchableOpacity>
                         </View>
@@ -147,6 +137,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
+        paddingBottom: 50
     },
     cameraContainer: {
         marginVertical: 20,
