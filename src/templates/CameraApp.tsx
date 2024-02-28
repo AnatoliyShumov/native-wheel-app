@@ -87,9 +87,9 @@ const App = () => {
                         <View style={styles.imagePreviewContainer}>
                             <Image source={{ uri: image.uri }} style={styles.image} />
                             <Slider
-                                style={{ width: 200, height: 40, marginTop: 15 }}
-                                minimumValue={5}
-                                maximumValue={10}
+                                style={{ width: 200, height: 40, marginHorizontal: 15 }}
+                                minimumValue={0}
+                                maximumValue={60}
                                 value={image.blur}
                                 onValueChange={(value) => {
                                     const updatedImages = images.map((img, imgIndex) => {
@@ -102,7 +102,6 @@ const App = () => {
                                 }}
                                 onSlidingComplete={() => applyImageManipulations(index)}
                             />
-                            {/* Додайте тут Slider для різкості, якщо знайдете спосіб її регулювання */}
                             <TouchableOpacity onPress={() => retakePhoto(index)} style={styles.retakeButton}>
                                 <Text style={styles.retakeButtonText}>Retake</Text>
                             </TouchableOpacity>
